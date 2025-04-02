@@ -27,21 +27,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 const position = marker.getLatLng();
                 document.getElementById('latitude').value = position.lat;
                 document.getElementById('longitude').value = position.lng;
+                
+                // Get address from coordinates
+                getAddressFromCoordinates(position.lat, position.lng);
             });
             
             // Initial values for hidden fields
             document.getElementById('latitude').value = lat;
             document.getElementById('longitude').value = lng;
+            
+            // Get initial address from coordinates
+            getAddressFromCoordinates(lat, lng);
         } else {
             // Update existing map
             map.setView([lat, lng], 13);
             marker.setLatLng([lat, lng]);
+            
+            // Get address from new coordinates
+            getAddressFromCoordinates(lat, lng);
         }
+    }
+    
+    // Function to get address from coordinates using OpenStreetMap Nominatim API
+    function getAddressFromCoordinates(lat, lng) {
+        // Show loading in the lokasi input
+        const lokasiInput = document.getElementById('lokasi');
+        lokasiInput.value = 'Mendapatkan alamat...';
+        
+        // Call Nominatim API
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    lokasiInput.value = data.display_name;
+                } else {
+                    lokasiInput.value = `Koordinat: ${lat}, ${lng}`;
+                }
+            })
+            .catch(error => {
+                console.error('Error getting address:', error);
+                lokasiInput.value = `Koordinat: ${lat}, ${lng}`;
+            });
     }
     
     // Get location button click handler
     document.getElementById('getLocationBtn').addEventListener('click', function() {
         if (navigator.geolocation) {
+            showAlert('success', 'Mendapatkan lokasi... Mohon tunggu');
             navigator.geolocation.getCurrentPosition(
                 // Success callback
                 function(position) {

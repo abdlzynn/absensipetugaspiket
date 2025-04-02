@@ -1,7 +1,8 @@
 import os
 import uuid
+import requests
 from datetime import datetime
-from flask import render_template, request, redirect, url_for, flash, jsonify, send_file
+from flask import render_template, request, redirect, url_for, flash, jsonify, send_file, session
 from werkzeug.utils import secure_filename
 import base64
 from io import BytesIO
@@ -99,9 +100,26 @@ def submit_absensi():
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Terjadi kesalahan: {str(e)}'}), 500
 
-@app.route('/admin')
+@app.route('/admin', methods=['GET', 'POST'])
 def admin_dashboard():
-    """Admin dashboard for attendance records"""
+    """Admin dashboard for attendance records, protected with password"""
+    # Check if already authenticated in session
+    if not session.get('admin_authenticated'):
+        # If not authenticated, show login form
+        if request.method == 'POST':
+            # Handle login form submission
+            password = request.form.get('password')
+            if password == 'simkuring':
+                # Set session flag for authentication
+                session['admin_authenticated'] = True
+            else:
+                flash('Password salah!', 'danger')
+                return render_template('admin/login.html')
+        else:
+            # Show login form
+            return render_template('admin/login.html')
+    
+    # If authenticated, continue to dashboard
     # Get filter parameters
     tanggal = request.args.get('tanggal')
     nama = request.args.get('nama', '')
@@ -132,12 +150,22 @@ def admin_dashboard():
 @app.route('/admin/detail/<int:absensi_id>')
 def detail_absensi(absensi_id):
     """Detail view for a specific attendance record"""
+    # Check if admin is authenticated
+    if not session.get('admin_authenticated'):
+        flash('Anda harus login terlebih dahulu!', 'danger')
+        return redirect(url_for('admin_dashboard'))
+        
     absensi = Absensi.query.get_or_404(absensi_id)
     return render_template('admin/detail_absensi.html', absensi=absensi)
 
 @app.route('/admin/export-pdf', methods=['POST'])
 def export_pdf():
     """Export attendance records as PDF"""
+    # Check if admin is authenticated
+    if not session.get('admin_authenticated'):
+        flash('Anda harus login terlebih dahulu!', 'danger')
+        return redirect(url_for('admin_dashboard'))
+        
     # Get filter parameters
     tanggal = request.form.get('tanggal', '')
     nama = request.form.get('nama', '')
