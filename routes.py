@@ -109,7 +109,7 @@ def admin_dashboard():
         if request.method == 'POST':
             # Handle login form submission
             password = request.form.get('password')
-            if password == 'simkuring':
+            if password == 'Z4yy4n4501':
                 # Set session flag for authentication
                 session['admin_authenticated'] = True
             else:
