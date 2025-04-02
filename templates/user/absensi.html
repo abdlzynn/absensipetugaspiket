@@ -16,14 +16,15 @@
                     
                     <!-- Name -->
                     <div class="mb-3">
-                        <label for="nama" class="form-label">Nama Karyawan <span class="text-danger">*</span></label>
+                        <label for="nama" class="form-label">Nama Petugas <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="nama" name="nama" required>
                     </div>
                     
                     <!-- Location -->
                     <div class="mb-3">
                         <label for="lokasi" class="form-label">Lokasi Tugas <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="lokasi" name="lokasi" required>
+                        <input type="text" class="form-control" id="lokasi" name="lokasi" readonly required>
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Lokasi akan otomatis terisi saat tombol "Dapatkan Lokasi" ditekan</small>
                     </div>
                     
                     <!-- Map Location -->
