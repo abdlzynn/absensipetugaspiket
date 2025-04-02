@@ -17,20 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
             
-            // Add a draggable marker
+            // Add a non-draggable marker
             marker = L.marker([lat, lng], {
-                draggable: true
+                draggable: false
             }).addTo(map);
-            
-            // Update hidden fields when marker is dragged
-            marker.on('dragend', function(event) {
-                const position = marker.getLatLng();
-                document.getElementById('latitude').value = position.lat;
-                document.getElementById('longitude').value = position.lng;
-                
-                // Get address from coordinates
-                getAddressFromCoordinates(position.lat, position.lng);
-            });
             
             // Initial values for hidden fields
             document.getElementById('latitude').value = lat;
