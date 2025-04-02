@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Absensi Petugas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0 fs-4"><i class="fas fa-user-check me-2"></i>Form Absensi Petugas Piket</h2>
+            </div>
+            <div class="card-body">
+                <form id="absensiForm" enctype="multipart/form-data">
+                    <!-- Alert container for form messages -->
+                    <div id="alertContainer"></div>
+                    
+                    <!-- Name -->
+                    <div class="mb-3">
+                        <label for="nama" class="form-label">Nama Karyawan <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="nama" name="nama" required>
+                    </div>
+                    
+                    <!-- Location -->
+                    <div class="mb-3">
+                        <label for="lokasi" class="form-label">Lokasi Tugas <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="lokasi" name="lokasi" required>
+                    </div>
+                    
+                    <!-- Map Location -->
+                    <div class="mb-3">
+                        <label class="form-label">Periksa Lokasi pada Peta <span class="text-danger">*</span></label>
+                        <div id="map" style="height: 300px;" class="border rounded"></div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-muted">Geser pin untuk menandai lokasi yang tepat</small>
+                            <button type="button" id="getLocationBtn" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-location-arrow me-1"></i> Dapatkan Lokasi
+                            </button>
+                        </div>
+                        <input type="hidden" id="latitude" name="latitude" required>
+                        <input type="hidden" id="longitude" name="longitude" required>
+                    </div>
+                    
+                    <!-- Photo Front -->
+                    <div class="mb-3">
+                        <label class="form-label">Foto Depan <span class="text-danger">*</span></label>
+                        <div class="card p-2">
+                            <div class="text-center mb-2">
+                                <video id="frontCamera" width="320" height="240" class="img-fluid d-none mb-2 border rounded"></video>
+                                <canvas id="frontCanvas" width="320" height="240" class="d-none img-fluid mb-2 border rounded"></canvas>
+                                <img id="frontPreview" src="" alt="Preview foto depan" class="img-fluid mb-2 border rounded d-none" style="max-height: 240px">
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <button type="button" id="startFrontCameraBtn" class="btn btn-sm btn-primary me-2">
+                                    <i class="fas fa-camera me-1"></i> Buka Kamera
+                                </button>
+                                <button type="button" id="captureFrontBtn" class="btn btn-sm btn-success me-2 d-none">
+                                    <i class="fas fa-camera me-1"></i> Ambil Foto
+                                </button>
+                                <button type="button" id="retakeFrontBtn" class="btn btn-sm btn-warning d-none">
+                                    <i class="fas fa-redo me-1"></i> Ambil Ulang
+                                </button>
+                            </div>
+                            <input type="hidden" id="foto_depan" name="foto_depan" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Photo Back -->
+                    <div class="mb-3">
+                        <label class="form-label">Foto Belakang <span class="text-danger">*</span></label>
+                        <div class="card p-2">
+                            <div class="text-center mb-2">
+                                <video id="backCamera" width="320" height="240" class="img-fluid d-none mb-2 border rounded"></video>
+                                <canvas id="backCanvas" width="320" height="240" class="d-none img-fluid mb-2 border rounded"></canvas>
+                                <img id="backPreview" src="" alt="Preview foto belakang" class="img-fluid mb-2 border rounded d-none" style="max-height: 240px">
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <button type="button" id="startBackCameraBtn" class="btn btn-sm btn-primary me-2">
+                                    <i class="fas fa-camera me-1"></i> Buka Kamera
+                                </button>
+                                <button type="button" id="captureBackBtn" class="btn btn-sm btn-success me-2 d-none">
+                                    <i class="fas fa-camera me-1"></i> Ambil Foto
+                                </button>
+                                <button type="button" id="retakeBackBtn" class="btn btn-sm btn-warning d-none">
+                                    <i class="fas fa-redo me-1"></i> Ambil Ulang
+                                </button>
+                            </div>
+                            <input type="hidden" id="foto_belakang" name="foto_belakang" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="mb-4">
+                        <label class="form-label">Status Absensi <span class="text-danger">*</span></label>
+                        <div class="d-flex">
+                            <div class="form-check me-4">
+                                <input class="form-check-input" type="radio" name="status" id="statusMasuk" value="masuk" checked>
+                                <label class="form-check-label" for="statusMasuk">
+                                    <i class="fas fa-sign-in-alt text-success me-1"></i> Masuk
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="status" id="statusPulang" value="pulang">
+                                <label class="form-check-label" for="statusPulang">
+                                    <i class="fas fa-sign-out-alt text-danger me-1"></i> Pulang
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" id="submitBtn" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i> Kirim Absensi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/absensi.js') }}"></script>
+{% endblock %}

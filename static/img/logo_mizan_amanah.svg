@@ -1,0 +1,23 @@
+<svg width="200" height="80" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stylized Mizan Amanah Logo -->
+  <style>
+    .logo-text { font-family: Arial, sans-serif; font-weight: bold; }
+    .primary-color { fill: #116466; }
+    .secondary-color { fill: #5c946e; }
+  </style>
+  
+  <!-- Logo Shape -->
+  <circle cx="40" cy="40" r="30" class="primary-color" opacity="0.9" />
+  <path d="M40 15 C 50 25, 60 35, 40 65" stroke="#2C3531" stroke-width="4" fill="none" />
+  <path d="M40 15 C 30 25, 20 35, 40 65" stroke="#2C3531" stroke-width="4" fill="none" />
+  
+  <!-- Balance Scale Symbol -->
+  <rect x="25" y="25" width="30" height="4" rx="2" class="secondary-color" />
+  <circle cx="25" cy="30" r="5" class="secondary-color" opacity="0.8" />
+  <circle cx="55" cy="30" r="5" class="secondary-color" opacity="0.8" />
+  
+  <!-- Text -->
+  <text x="80" y="35" class="logo-text primary-color" font-size="20">MIZAN</text>
+  <text x="80" y="55" class="logo-text secondary-color" font-size="18">AMANAH</text>
+  <text x="80" y="70" class="logo-text" font-size="10" fill="#2C3531">Portal Absensi</text>
+</svg>

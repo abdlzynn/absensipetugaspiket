@@ -1,0 +1,142 @@
+/* Custom styles for the Absensi Portal */
+
+/* Override primary color to match Mizan Amanah */
+:root {
+    --bs-primary: #116466;
+    --bs-primary-rgb: 17, 100, 102;
+    --bs-primary-hover: #0a4b4c;
+    --bs-info: #2C3531;
+    --bs-info-rgb: 44, 53, 49;
+    --bs-success: #5c946e;
+}
+
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-primary:hover, 
+.btn-primary:focus, 
+.btn-primary:active {
+    background-color: var(--bs-primary-hover) !important;
+    border-color: var(--bs-primary-hover) !important;
+}
+
+.bg-primary {
+    background-color: var(--bs-primary) !important;
+}
+
+/* Custom card styling */
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 1rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: 600;
+    border-bottom: none;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Form styling */
+.form-control, .form-select {
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Map styling */
+#map, #detail-map {
+    width: 100%;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
+    border-radius: 4px;
+}
+
+/* Photo preview styling */
+#frontPreview, #backPreview {
+    max-width: 100%;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+#frontPreview:hover, #backPreview:hover {
+    opacity: 0.9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    #map, #detail-map {
+        height: 250px !important;
+    }
+}
+
+/* Footer styling */
+.footer {
+    margin-top: 2rem;
+    padding: 1.5rem 0;
+    color: #adb5bd;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Alert animation */
+.alert {
+    animation: fadeInDown 0.5s;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Table styling */
+.table-responsive {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+/* Navbar custom styling */
+.navbar-brand {
+    font-weight: 600;
+}
+
+.nav-link.active {
+    font-weight: 600;
+    color: var(--bs-primary) !important;
+}
