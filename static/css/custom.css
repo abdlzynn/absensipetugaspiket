@@ -1,29 +1,59 @@
 /* Custom styles for the Absensi Portal */
 
-/* Override primary color to match Mizan Amanah */
+/* Colors based on Mizan Amanah logo */
 :root {
-    --bs-primary: #116466;
-    --bs-primary-rgb: 17, 100, 102;
-    --bs-primary-hover: #0a4b4c;
-    --bs-info: #2C3531;
-    --bs-info-rgb: 44, 53, 49;
-    --bs-success: #5c946e;
+    --ma-red: #FF0000;
+    --ma-red-rgb: 255, 0, 0;
+    --ma-red-hover: #D00000;
+    --ma-orange: #FF8C00;
+    --ma-orange-rgb: 255, 140, 0;
+    --ma-orange-hover: #E07800;
+    --ma-dark: #121212;
+    --ma-darker: #0A0A0A;
+    --ma-light: #E0E0E0;
+    
+    /* Override Bootstrap variables */
+    --bs-primary: var(--ma-red);
+    --bs-primary-rgb: var(--ma-red-rgb);
+    --bs-primary-hover: var(--ma-red-hover);
+    --bs-secondary: var(--ma-orange);
+    --bs-secondary-rgb: var(--ma-orange-rgb);
+    --bs-success: #28a745;
+    --bs-info: #17a2b8;
+    --bs-info-rgb: 23, 162, 184;
 }
 
+/* Button styling */
 .btn-primary {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
+    background-color: var(--ma-red);
+    border-color: var(--ma-red);
 }
 
 .btn-primary:hover, 
 .btn-primary:focus, 
 .btn-primary:active {
-    background-color: var(--bs-primary-hover) !important;
-    border-color: var(--bs-primary-hover) !important;
+    background-color: var(--ma-red-hover) !important;
+    border-color: var(--ma-red-hover) !important;
+}
+
+.btn-secondary {
+    background-color: var(--ma-orange);
+    border-color: var(--ma-orange);
+}
+
+.btn-secondary:hover, 
+.btn-secondary:focus, 
+.btn-secondary:active {
+    background-color: var(--ma-orange-hover) !important;
+    border-color: var(--ma-orange-hover) !important;
 }
 
 .bg-primary {
-    background-color: var(--bs-primary) !important;
+    background-color: var(--ma-red) !important;
+}
+
+.bg-secondary {
+    background-color: var(--ma-orange) !important;
 }
 
 /* Custom card styling */
@@ -32,16 +62,19 @@
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
     margin-bottom: 1rem;
+    background-color: var(--ma-darker);
+    border-color: #333;
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .card-header {
     font-weight: 600;
     border-bottom: none;
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 /* Button styling */
@@ -102,6 +135,7 @@
     margin-top: 2rem;
     padding: 1.5rem 0;
     color: #adb5bd;
+    background-color: var(--ma-darker) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -132,11 +166,15 @@
 }
 
 /* Navbar custom styling */
+.navbar-dark {
+    background-color: var(--ma-darker) !important;
+}
+
 .navbar-brand {
     font-weight: 600;
 }
 
 .nav-link.active {
     font-weight: 600;
-    color: var(--bs-primary) !important;
+    color: var(--ma-orange) !important;
 }
