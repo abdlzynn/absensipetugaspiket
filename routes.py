@@ -107,10 +107,23 @@ def submit_absensi():
         status = request.form.get('status')
         foto_depan_b64 = request.form.get('foto_depan')
         foto_belakang_b64 = request.form.get('foto_belakang')
+        device_time = request.form.get('device_time')
         
         # Validate form data
         if not all([nama, lokasi, latitude, longitude, status, foto_depan_b64, foto_belakang_b64]):
             return jsonify({'success': False, 'message': 'Semua field harus diisi'}), 400
+        
+        # Parse device time if provided, otherwise use server time
+        try:
+            if device_time:
+                # Parse ISO format datetime from client
+                waktu = datetime.fromisoformat(device_time.replace('Z', '+00:00'))
+            else:
+                # Fallback to server time
+                waktu = datetime.now()
+        except (ValueError, TypeError) as e:
+            app.logger.warning(f"Error parsing device time: {e}, using server time instead")
+            waktu = datetime.now()
         
         # Save images
         foto_depan_path = save_base64_image(foto_depan_b64, 'depan')
@@ -128,7 +141,7 @@ def submit_absensi():
             foto_depan=foto_depan_path,
             foto_belakang=foto_belakang_path,
             status=status,
-            waktu=datetime.now()
+            waktu=waktu
         )
         
         db.session.add(new_absensi)
@@ -138,7 +151,7 @@ def submit_absensi():
         notification_message = f"{nama} telah melakukan absen {status_text}"
         new_notification = Notification(
             message=notification_message,
-            waktu=datetime.now(),
+            waktu=waktu,
             is_read=False
         )
         

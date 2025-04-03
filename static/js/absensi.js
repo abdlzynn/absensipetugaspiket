@@ -261,8 +261,15 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Memproses...';
         
+        // Get current local time from client's device
+        const localTime = new Date();
+        const localTimeString = localTime.toISOString();
+        
         // Prepare form data
         const formData = new FormData(this);
+        
+        // Add device time to form data
+        formData.append('device_time', localTimeString);
         
         // Send data to server
         axios.post('/submit-absensi', formData)
