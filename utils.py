@@ -5,6 +5,7 @@ import tempfile
 from flask import render_template
 from weasyprint import HTML, CSS
 from app import app
+from models import DEFAULT_TIMEZONE
 
 def generate_pdf(absensi_list, tanggal=None, nama=None, status=None):
     """Generate a PDF report of attendance records"""

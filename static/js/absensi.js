@@ -316,8 +316,32 @@ document.addEventListener('DOMContentLoaded', function() {
                         fetchNotifications();
                     }
                     
-                    // Reset map to default
-                    initMap(defaultLat, defaultLng);
+                    // Reset map to current device location instead of default
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                initMap(position.coords.latitude, position.coords.longitude);
+                            },
+                            function(error) {
+                                console.error("Geolocation error after form submit:", error);
+                                // Fallback to previous location
+                                if (marker) {
+                                    const currentPos = marker.getLatLng();
+                                    initMap(currentPos.lat, currentPos.lng);
+                                } else {
+                                    initMap(defaultLat, defaultLng);
+                                }
+                            }
+                        );
+                    } else {
+                        // If geolocation not available, use current marker position or default
+                        if (marker) {
+                            const currentPos = marker.getLatLng();
+                            initMap(currentPos.lat, currentPos.lng);
+                        } else {
+                            initMap(defaultLat, defaultLng);
+                        }
+                    }
                 } else {
                     showAlert('error', response.data.message || 'Terjadi kesalahan saat mengirim data.');
                 }
