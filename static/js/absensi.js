@@ -436,7 +436,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Add listener for form submission to update local storage
         const form = document.getElementById('absensiForm');
-        form.addEventListener('submit', function(e) {
+        let isSubmitting = false;
+form.addEventListener('submit', function(e) {
+    if (isSubmitting) {
+        e.preventDefault();
+        return;
+    }
+    isSubmitting = true;
+    
+    // Reset after 5 seconds
+    setTimeout(() => {
+        isSubmitting = false;
+    }, 5000);
             // Don't add another listener if we already have one
             if (form.hasAttribute('data-has-attendance-listener')) return;
             

@@ -123,10 +123,14 @@ def submit_absensi():
         today = datetime.now(DEFAULT_TIMEZONE).date()
         
         # Check if this person has already taken attendance with the same status today
+        # Add time threshold of 5 minutes to prevent accidental double submissions
+        five_minutes_ago = datetime.now(DEFAULT_TIMEZONE) - timedelta(minutes=5)
+        
         existing_attendance = Absensi.query.filter(
             db.func.date(Absensi.waktu) == today,
             Absensi.nama == nama,
-            Absensi.status == status
+            Absensi.status == status,
+            Absensi.waktu >= five_minutes_ago
         ).first()
         
         if existing_attendance:
