@@ -33,6 +33,16 @@ def save_base64_image(base64_str, prefix):
         img_data = base64.b64decode(base64_str)
         img = Image.open(BytesIO(img_data))
         
+        # Convert to RGB if necessary
+        if img.mode in ('RGBA', 'P'): 
+            img = img.convert('RGB')
+            
+        # Resize if too large (max 1920px width)
+        if img.width > 1920:
+            ratio = 1920.0 / img.width
+            new_size = (1920, int(img.height * ratio))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+        
         # Generate unique filename
         filename = f"{prefix}_{uuid.uuid4().hex}.jpg"
         file_path = os.path.join(UPLOAD_FOLDER, filename)
