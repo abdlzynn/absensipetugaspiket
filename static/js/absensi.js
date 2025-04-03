@@ -100,134 +100,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Front camera variables
-    let frontStream = null;
-    const frontCamera = document.getElementById('frontCamera');
-    const frontCanvas = document.getElementById('frontCanvas');
+    // Front and back camera variables
     const frontPreview = document.getElementById('frontPreview');
-    
-    // Back camera variables
-    let backStream = null;
-    const backCamera = document.getElementById('backCamera');
-    const backCanvas = document.getElementById('backCanvas');
     const backPreview = document.getElementById('backPreview');
     
-    // Front camera button handlers
-    document.getElementById('startFrontCameraBtn').addEventListener('click', function() {
-        startCamera('front');
+    // File input handlers for camera capture
+    document.getElementById('frontCameraInput').addEventListener('change', function(e) {
+        handleCameraCapture(e, 'front');
     });
     
-    document.getElementById('captureFrontBtn').addEventListener('click', function() {
-        capturePhoto('front');
+    document.getElementById('backCameraInput').addEventListener('change', function(e) {
+        handleCameraCapture(e, 'back');
     });
     
+    // Reset button handlers
     document.getElementById('retakeFrontBtn').addEventListener('click', function() {
         retakePhoto('front');
-    });
-    
-    // Back camera button handlers
-    document.getElementById('startBackCameraBtn').addEventListener('click', function() {
-        startCamera('back');
-    });
-    
-    document.getElementById('captureBackBtn').addEventListener('click', function() {
-        capturePhoto('back');
     });
     
     document.getElementById('retakeBackBtn').addEventListener('click', function() {
         retakePhoto('back');
     });
     
-    // Start camera stream
-    function startCamera(type) {
-        const constraints = {
-            video: { facingMode: type === 'back' ? 'environment' : 'user' },
-            audio: false
+    // Handle file input change (camera capture)
+    function handleCameraCapture(event, type) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const preview = type === 'front' ? frontPreview : backPreview;
+        const inputField = type === 'front' ? 'foto_depan' : 'foto_belakang';
+        const retakeBtn = type === 'front' ? 'retakeFrontBtn' : 'retakeBackBtn';
+        
+        // Create a FileReader to read the image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Display preview
+            preview.src = e.target.result;
+            preview.classList.remove('d-none');
+            
+            // Set the base64 data to hidden input
+            document.getElementById(inputField).value = e.target.result;
+            
+            // Show retake button
+            document.getElementById(retakeBtn).classList.remove('d-none');
         };
         
-        // Stop any existing stream
-        if (type === 'front' && frontStream) {
-            frontStream.getTracks().forEach(track => track.stop());
-        } else if (type === 'back' && backStream) {
-            backStream.getTracks().forEach(track => track.stop());
-        }
-        
-        navigator.mediaDevices.getUserMedia(constraints)
-            .then(function(stream) {
-                if (type === 'front') {
-                    frontStream = stream;
-                    frontCamera.srcObject = stream;
-                    frontCamera.classList.remove('d-none');
-                    frontCanvas.classList.add('d-none');
-                    frontPreview.classList.add('d-none');
-                    document.getElementById('captureFrontBtn').classList.remove('d-none');
-                    document.getElementById('startFrontCameraBtn').classList.add('d-none');
-                    document.getElementById('retakeFrontBtn').classList.add('d-none');
-                    frontCamera.play();
-                } else {
-                    backStream = stream;
-                    backCamera.srcObject = stream;
-                    backCamera.classList.remove('d-none');
-                    backCanvas.classList.add('d-none');
-                    backPreview.classList.add('d-none');
-                    document.getElementById('captureBackBtn').classList.remove('d-none');
-                    document.getElementById('startBackCameraBtn').classList.add('d-none');
-                    document.getElementById('retakeBackBtn').classList.add('d-none');
-                    backCamera.play();
-                }
-            })
-            .catch(function(err) {
-                showAlert('error', `Error saat mengakses kamera: ${err.message}`);
-            });
+        // Read the file as DataURL (base64)
+        reader.readAsDataURL(file);
     }
     
-    // Capture photo from camera
-    function capturePhoto(type) {
-        const video = type === 'front' ? frontCamera : backCamera;
-        const canvas = type === 'front' ? frontCanvas : backCanvas;
-        const preview = type === 'front' ? frontPreview : backPreview;
-        const captureBtn = type === 'front' ? 'captureFrontBtn' : 'captureBackBtn';
-        const retakeBtn = type === 'front' ? 'retakeFrontBtn' : 'retakeBackBtn';
-        const inputField = type === 'front' ? 'foto_depan' : 'foto_belakang';
-        
-        // Get canvas context
-        const context = canvas.getContext('2d');
-        
-        // Draw video frame to canvas
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // Convert canvas to data URL
-        const imageData = canvas.toDataURL('image/jpeg', 0.8);
-        
-        // Set hidden input value
-        document.getElementById(inputField).value = imageData;
-        
-        // Show preview
-        preview.src = imageData;
-        preview.classList.remove('d-none');
-        canvas.classList.remove('d-none');
-        video.classList.add('d-none');
-        
-        // Update buttons
-        document.getElementById(captureBtn).classList.add('d-none');
-        document.getElementById(retakeBtn).classList.remove('d-none');
-        
-        // Stop camera stream
-        if (type === 'front' && frontStream) {
-            frontStream.getTracks().forEach(track => track.stop());
-        } else if (type === 'back' && backStream) {
-            backStream.getTracks().forEach(track => track.stop());
-        }
-    }
-    
-    // Retake photo
+    // Reset photo
     function retakePhoto(type) {
         // Reset input field
         const inputField = type === 'front' ? 'foto_depan' : 'foto_belakang';
-        document.getElementById(inputField).value = '';
+        const fileInput = type === 'front' ? 'frontCameraInput' : 'backCameraInput';
+        const preview = type === 'front' ? frontPreview : backPreview;
+        const retakeBtn = type === 'front' ? 'retakeFrontBtn' : 'retakeBackBtn';
         
-        // Start camera again
-        startCamera(type);
+        // Clear values
+        document.getElementById(inputField).value = '';
+        document.getElementById(fileInput).value = '';
+        
+        // Hide preview and retake button
+        preview.classList.add('d-none');
+        document.getElementById(retakeBtn).classList.add('d-none');
     }
     
     // Form submission
@@ -269,10 +205,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Reset photos
                     document.getElementById('foto_depan').value = '';
                     document.getElementById('foto_belakang').value = '';
+                    document.getElementById('frontCameraInput').value = '';
+                    document.getElementById('backCameraInput').value = '';
                     frontPreview.classList.add('d-none');
                     backPreview.classList.add('d-none');
-                    document.getElementById('startFrontCameraBtn').classList.remove('d-none');
-                    document.getElementById('startBackCameraBtn').classList.remove('d-none');
                     document.getElementById('retakeFrontBtn').classList.add('d-none');
                     document.getElementById('retakeBackBtn').classList.add('d-none');
                     
