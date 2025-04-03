@@ -261,9 +261,23 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Memproses...';
         
-        // Get current local time from client's device
+        // Get current local time from client's device with timezone information
         const localTime = new Date();
-        const localTimeString = localTime.toISOString();
+        // Format: YYYY-MM-DDTHH:MM:SS±HH:MM (ISO format with timezone offset)
+        const tzOffset = -localTime.getTimezoneOffset();
+        const tzOffsetHours = Math.floor(Math.abs(tzOffset) / 60);
+        const tzOffsetMinutes = Math.abs(tzOffset) % 60;
+        const tzOffsetSign = tzOffset >= 0 ? '+' : '-';
+        const tzOffsetFormatted = `${tzOffsetSign}${String(tzOffsetHours).padStart(2, '0')}:${String(tzOffsetMinutes).padStart(2, '0')}`;
+        
+        // Create ISO string with timezone information
+        const localTimeString = localTime.getFullYear() + '-' +
+            String(localTime.getMonth() + 1).padStart(2, '0') + '-' + 
+            String(localTime.getDate()).padStart(2, '0') + 'T' + 
+            String(localTime.getHours()).padStart(2, '0') + ':' + 
+            String(localTime.getMinutes()).padStart(2, '0') + ':' + 
+            String(localTime.getSeconds()).padStart(2, '0') + 
+            tzOffsetFormatted;
         
         // Prepare form data
         const formData = new FormData(this);

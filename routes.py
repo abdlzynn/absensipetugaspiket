@@ -116,8 +116,30 @@ def submit_absensi():
         # Parse device time if provided, otherwise use server time
         try:
             if device_time:
-                # Parse ISO format datetime from client
-                waktu = datetime.fromisoformat(device_time.replace('Z', '+00:00'))
+                # Parse ISO format datetime from client with timezone
+                # The format should be: YYYY-MM-DDTHH:MM:SS+HH:MM or YYYY-MM-DDTHH:MM:SS-HH:MM
+                app.logger.debug(f"Received device time: {device_time}")
+                
+                # Handle different format possibilities
+                if 'Z' in device_time:
+                    # If time ends with Z (UTC), replace with +00:00
+                    waktu = datetime.fromisoformat(device_time.replace('Z', '+00:00'))
+                elif '+' in device_time or '-' in device_time:
+                    # If time already has timezone information
+                    if device_time.count(':') == 3:  # If format has seconds and timezone with colon
+                        waktu = datetime.fromisoformat(device_time)
+                    else:
+                        # If format doesn't match expected format, try different approach
+                        try:
+                            from dateutil import parser
+                            waktu = parser.parse(device_time)
+                        except:
+                            raise ValueError(f"Could not parse device time: {device_time}")
+                else:
+                    # If no timezone info, assume UTC
+                    waktu = datetime.fromisoformat(device_time + '+00:00')
+                
+                app.logger.debug(f"Parsed time: {waktu}")
             else:
                 # Fallback to server time
                 waktu = datetime.now()
