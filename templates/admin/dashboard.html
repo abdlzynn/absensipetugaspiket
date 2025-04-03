@@ -86,7 +86,7 @@
                                         <span class="badge bg-danger">Pulang</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ absensi.waktu.strftime('%d-%m-%Y %H:%M:%S') }} <small class="text-muted">(Waktu Perangkat)</small></td>
+                                    <td>{{ absensi.waktu.strftime('%d-%m-%Y %H:%M:%S %z') }} <small class="text-muted">(Waktu Perangkat)</small></td>
                                     <td>
                                         <a href="{{ url_for('detail_absensi', absensi_id=absensi.id) }}" class="btn btn-sm btn-info">
                                             <i class="fas fa-eye me-1"></i> Detail

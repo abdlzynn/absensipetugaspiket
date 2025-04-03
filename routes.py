@@ -142,11 +142,11 @@ def submit_absensi():
                 
                 app.logger.debug(f"Parsed time: {waktu}")
             else:
-                # Fallback to server time
-                waktu = datetime.now()
+                # Fallback to server time with timezone set to DEFAULT_TIMEZONE
+                waktu = datetime.now(DEFAULT_TIMEZONE)
         except (ValueError, TypeError) as e:
             app.logger.warning(f"Error parsing device time: {e}, using server time instead")
-            waktu = datetime.now()
+            waktu = datetime.now(DEFAULT_TIMEZONE)
         
         # Save images
         foto_depan_path = save_base64_image(foto_depan_b64, 'depan')
