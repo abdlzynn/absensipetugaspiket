@@ -118,6 +118,22 @@ def submit_absensi():
         # Validate form data
         if not all([nama, lokasi, latitude, longitude, status, foto_depan_b64, foto_belakang_b64]):
             return jsonify({'success': False, 'message': 'Semua field harus diisi'}), 400
+            
+        # Get today's date in YYYY-MM-DD format for checking attendance status
+        today = datetime.now(DEFAULT_TIMEZONE).date()
+        
+        # Check if this person has already taken attendance with the same status today
+        existing_attendance = Absensi.query.filter(
+            db.func.date(Absensi.waktu) == today,
+            Absensi.nama == nama,
+            Absensi.status == status
+        ).first()
+        
+        if existing_attendance:
+            return jsonify({
+                'success': False, 
+                'message': f'Anda sudah melakukan absen {status} hari ini'
+            }), 400
         
         # Parse device time if provided, otherwise use server time
         try:

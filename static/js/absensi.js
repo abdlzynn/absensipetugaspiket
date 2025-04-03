@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Check device status for attendance restrictions
+    checkAttendanceStatus();
+    
     // Map initialization
     let map = null;
     let marker = null;
@@ -384,5 +387,82 @@ document.addEventListener('DOMContentLoaded', function() {
                 bsAlert.close();
             }, 5000);
         }
+    }
+
+    // Function to check and set attendance status restrictions
+    function checkAttendanceStatus() {
+        // Get today's date in YYYY-MM-DD format for storage key
+        const today = new Date();
+        const dateStr = today.getFullYear() + '-' + 
+            String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+            String(today.getDate()).padStart(2, '0');
+        
+        // Check localStorage for attendance status
+        const attendanceStatusKey = 'attendance_status_' + dateStr;
+        const attendanceStatus = localStorage.getItem(attendanceStatusKey);
+        
+        // Determine which attendance options should be available
+        if (attendanceStatus) {
+            const status = JSON.parse(attendanceStatus);
+            
+            // Disable appropriate radio button based on what's already recorded
+            const masukRadio = document.getElementById('statusMasuk');
+            const pulangRadio = document.getElementById('statusPulang');
+            
+            if (status.masuk && status.pulang) {
+                // Both attendance records exist for today
+                masukRadio.disabled = true;
+                pulangRadio.disabled = true;
+                showAlert('error', 'Anda sudah melakukan absen masuk dan pulang hari ini');
+                
+                // Disable submit button
+                document.getElementById('submitBtn').disabled = true;
+                
+            } else if (status.masuk) {
+                // Only check-in exists
+                masukRadio.disabled = true;
+                pulangRadio.disabled = false;
+                pulangRadio.checked = true;
+                showAlert('info', 'Anda sudah absen masuk hari ini. Silakan pilih absen pulang.');
+                
+            } else if (status.pulang) {
+                // Only check-out exists
+                masukRadio.disabled = false;
+                pulangRadio.disabled = true;
+                masukRadio.checked = true;
+                showAlert('info', 'Anda sudah absen pulang hari ini. Silakan pilih absen masuk.');
+            }
+        }
+        
+        // Add listener for form submission to update local storage
+        const form = document.getElementById('absensiForm');
+        form.addEventListener('submit', function(e) {
+            // Don't add another listener if we already have one
+            if (form.hasAttribute('data-has-attendance-listener')) return;
+            
+            // Mark that we've added the listener
+            form.setAttribute('data-has-attendance-listener', 'true');
+            
+            // Original form is already handled with e.preventDefault()
+            
+            // On successful submission, update localStorage
+            axios.post('/submit-absensi', new FormData(form))
+                .then(response => {
+                    if (response.data.success) {
+                        // Get current attendance status
+                        let status = JSON.parse(localStorage.getItem(attendanceStatusKey)) || { masuk: false, pulang: false };
+                        
+                        // Update status based on form selection
+                        const currentStatus = document.querySelector('input[name="status"]:checked').value;
+                        status[currentStatus] = true;
+                        
+                        // Save back to localStorage
+                        localStorage.setItem(attendanceStatusKey, JSON.stringify(status));
+                        
+                        // Update UI for next use
+                        checkAttendanceStatus();
+                    }
+                });
+        });
     }
 });
