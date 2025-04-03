@@ -37,18 +37,24 @@ def save_base64_image(base64_str, prefix):
         if img.mode in ('RGBA', 'P'): 
             img = img.convert('RGB')
             
-        # Resize if too large (max 1920px width)
-        if img.width > 1920:
-            ratio = 1920.0 / img.width
-            new_size = (1920, int(img.height * ratio))
+        # Resize to a smaller size to reduce file size
+        # Max dimension 800px
+        max_size = 800
+        if img.width > max_size or img.height > max_size:
+            if img.width > img.height:
+                ratio = max_size / img.width
+                new_size = (max_size, int(img.height * ratio))
+            else:
+                ratio = max_size / img.height
+                new_size = (int(img.width * ratio), max_size)
             img = img.resize(new_size, Image.Resampling.LANCZOS)
         
         # Generate unique filename
         filename = f"{prefix}_{uuid.uuid4().hex}.jpg"
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         
-        # Save image
-        img.save(file_path, 'JPEG', quality=85)
+        # Save image with reduced quality
+        img.save(file_path, 'JPEG', quality=70)
         return os.path.join('static/uploads', filename)
     except Exception as e:
         app.logger.error(f"Error saving image: {e}")

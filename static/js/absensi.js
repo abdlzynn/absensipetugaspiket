@@ -131,21 +131,58 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputField = type === 'front' ? 'foto_depan' : 'foto_belakang';
         const retakeBtn = type === 'front' ? 'retakeFrontBtn' : 'retakeBackBtn';
         
-        // Create a FileReader to read the image
-        const reader = new FileReader();
-        reader.onload = function(e) {
+        // Compress and resize image before saving
+        compressImage(file, function(compressedImage) {
             // Display preview
-            preview.src = e.target.result;
+            preview.src = compressedImage;
             preview.classList.remove('d-none');
             
-            // Set the base64 data to hidden input
-            document.getElementById(inputField).value = e.target.result;
+            // Set the compressed base64 data to hidden input
+            document.getElementById(inputField).value = compressedImage;
             
             // Show retake button
             document.getElementById(retakeBtn).classList.remove('d-none');
+        });
+    }
+    
+    // Function to compress and resize image
+    function compressImage(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                // Create canvas for resizing
+                const canvas = document.createElement('canvas');
+                
+                // Calculate new dimensions (max 800px width/height)
+                let width = img.width;
+                let height = img.height;
+                const maxSize = 800;
+                
+                if (width > height && width > maxSize) {
+                    height = Math.round((height * maxSize) / width);
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width = Math.round((width * maxSize) / height);
+                    height = maxSize;
+                }
+                
+                // Set canvas dimensions
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Draw resized image on canvas
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to compressed JPEG (quality 0.6 = 60%)
+                const compressedImage = canvas.toDataURL('image/jpeg', 0.6);
+                
+                // Return compressed image
+                callback(compressedImage);
+            };
+            img.src = e.target.result;
         };
-        
-        // Read the file as DataURL (base64)
         reader.readAsDataURL(file);
     }
     
