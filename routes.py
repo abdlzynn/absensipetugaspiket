@@ -229,26 +229,33 @@ def admin_dashboard():
             return render_template('admin/login.html')
     
     # If authenticated, continue to dashboard
-    # Get filter parameters
-    tanggal = request.args.get('tanggal')
-    nama = request.args.get('nama', '')
-    status = request.args.get('status', '')
-    
-    # Base query
-    query = Absensi.query
-    
-    # Apply filters
-    if tanggal:
-        date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
-        query = query.filter(
-            db.func.date(Absensi.waktu) == date_obj.date()
-        )
-    
-    if nama:
-        query = query.filter(Absensi.nama.ilike(f'%{nama}%'))
-    
-    if status:
-        query = query.filter(Absensi.status == status)
+    try:
+        # Get filter parameters
+        tanggal = request.args.get('tanggal')
+        nama = request.args.get('nama', '').strip()
+        status = request.args.get('status', '').strip().lower()
+        
+        # Base query
+        query = Absensi.query
+        
+        # Apply filters
+        if tanggal and tanggal != 'None':
+            try:
+                date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
+                query = query.filter(
+                    db.func.date(Absensi.waktu) == date_obj.date()
+                )
+            except ValueError:
+                flash('Format tanggal tidak valid', 'warning')
+        
+        if nama:
+            query = query.filter(Absensi.nama.ilike(f'%{nama}%'))
+        
+        if status in ['masuk', 'pulang']:
+            query = query.filter(Absensi.status == status)
+    except Exception as e:
+        app.logger.error(f"Error applying filters: {e}")
+        flash('Terjadi kesalahan saat memfilter data', 'error')
     
     # Get the records ordered by time (descending)
     absensi_list = query.order_by(Absensi.waktu.desc()).all()
