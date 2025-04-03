@@ -13,6 +13,11 @@ from app import app, db
 from models import Absensi, Notification, DEFAULT_TIMEZONE
 from utils import generate_pdf
 
+# Make DEFAULT_TIMEZONE available to all templates
+@app.context_processor
+def inject_timezone():
+    return dict(DEFAULT_TIMEZONE=DEFAULT_TIMEZONE)
+
 # Configuration for file uploads
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}

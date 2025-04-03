@@ -115,7 +115,7 @@ def generate_pdf(absensi_list, tanggal=None, nama=None, status=None):
                     <td>{absensi.nama}</td>
                     <td>{absensi.lokasi}</td>
                     <td>{"Masuk" if absensi.status == "masuk" else "Pulang"}</td>
-                    <td>{waktu_str} {absensi.waktu.strftime('%z')} (Waktu Perangkat)</td>
+                    <td>{absensi.waktu.astimezone(DEFAULT_TIMEZONE).strftime('%d-%m-%Y %H:%M:%S')} (Waktu Perangkat)</td>
                 </tr>
         """
     
