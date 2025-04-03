@@ -1,6 +1,7 @@
 import os
 import uuid
 import requests
+import pytz
 from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash, jsonify, send_file, session
 from werkzeug.utils import secure_filename
@@ -9,7 +10,7 @@ from io import BytesIO
 from PIL import Image
 
 from app import app, db
-from models import Absensi, Notification
+from models import Absensi, Notification, DEFAULT_TIMEZONE
 from utils import generate_pdf
 
 # Configuration for file uploads
@@ -136,8 +137,8 @@ def submit_absensi():
                         except:
                             raise ValueError(f"Could not parse device time: {device_time}")
                 else:
-                    # If no timezone info, assume UTC
-                    waktu = datetime.fromisoformat(device_time + '+00:00')
+                    # If no timezone info, assume Asia/Jakarta timezone
+                    waktu = datetime.fromisoformat(device_time).replace(tzinfo=DEFAULT_TIMEZONE)
                 
                 app.logger.debug(f"Parsed time: {waktu}")
             else:

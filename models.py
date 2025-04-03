@@ -1,5 +1,9 @@
 from datetime import datetime
+import pytz
 from app import db
+
+# Set the default timezone to Asia/Jakarta (WIB/Indonesia)
+DEFAULT_TIMEZONE = pytz.timezone('Asia/Jakarta')
 
 class Absensi(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -10,7 +14,7 @@ class Absensi(db.Model):
     foto_depan = db.Column(db.String(255), nullable=False)  # File path for front photo
     foto_belakang = db.Column(db.String(255), nullable=False)  # File path for back photo
     status = db.Column(db.String(20), nullable=False)  # 'masuk' or 'pulang'
-    waktu = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    waktu = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(DEFAULT_TIMEZONE), nullable=False)
     
     def __repr__(self):
         return f"<Absensi {self.nama} at {self.waktu}>"
@@ -31,7 +35,7 @@ class Absensi(db.Model):
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(255), nullable=False)
-    waktu = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    waktu = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(DEFAULT_TIMEZONE), nullable=False)
     is_read = db.Column(db.Boolean, default=False)
     
     def __repr__(self):
