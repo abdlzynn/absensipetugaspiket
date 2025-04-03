@@ -175,11 +175,16 @@ def export_pdf():
     query = Absensi.query
     
     # Apply filters
-    if tanggal:
-        date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
-        query = query.filter(
-            db.func.date(Absensi.waktu) == date_obj.date()
-        )
+    if tanggal and tanggal != 'None' and tanggal.strip():
+        try:
+            date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
+            query = query.filter(
+                db.func.date(Absensi.waktu) == date_obj.date()
+            )
+        except ValueError:
+            # Handle invalid date format
+            flash('Format tanggal tidak valid', 'danger')
+            return redirect(url_for('admin_dashboard'))
     
     if nama:
         query = query.filter(Absensi.nama.ilike(f'%{nama}%'))

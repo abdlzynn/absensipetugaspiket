@@ -13,12 +13,17 @@ def generate_pdf(absensi_list, tanggal=None, nama=None, status=None):
     
     # Create filter description
     filters = []
-    if tanggal:
-        filters.append(f"Tanggal: {tanggal}")
-    if nama:
+    if tanggal and tanggal != 'None' and tanggal.strip():
+        try:
+            date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
+            formatted_date = date_obj.strftime('%d-%m-%Y')
+            filters.append(f"Tanggal: {formatted_date}")
+        except ValueError:
+            filters.append("Tanggal: Semua")
+    if nama and nama.strip():
         filters.append(f"Nama: {nama}")
-    if status:
-        filters.append(f"Status: {status}")
+    if status and status.strip():
+        filters.append(f"Status: {'Masuk' if status == 'masuk' else 'Pulang'}")
     
     filter_description = ", ".join(filters) if filters else "Semua data"
     
