@@ -2,11 +2,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // Map initialization
     let map = null;
     let marker = null;
-    const defaultLat = -6.2088;  // Default to Jakarta, Indonesia
+    const defaultLat = -6.2088;  // Default fallback to Jakarta, Indonesia
     const defaultLng = 106.8456;
     
-    // Initialize map with default location
-    initMap(defaultLat, defaultLng);
+    // Try to get device location first, if not available use default
+    if (navigator.geolocation) {
+        showAlert('success', 'Mendapatkan lokasi perangkat... Mohon tunggu');
+        navigator.geolocation.getCurrentPosition(
+            // Success callback
+            function(position) {
+                initMap(position.coords.latitude, position.coords.longitude);
+                // Update hidden fields with detected location
+                document.getElementById('latitude').value = position.coords.latitude;
+                document.getElementById('longitude').value = position.coords.longitude;
+                showAlert('success', 'Lokasi berhasil ditemukan');
+            },
+            // Error callback (use default location if geolocation fails)
+            function(error) {
+                console.error("Geolocation error:", error);
+                initMap(defaultLat, defaultLng);
+                showAlert('error', 'Gagal mendapatkan lokasi otomatis. Gunakan tombol "Dapatkan Lokasi"');
+            },
+            // Options - use high accuracy for better results
+            {
+                enableHighAccuracy: true,
+                timeout: 10000, 
+                maximumAge: 0
+            }
+        );
+    } else {
+        // Fallback to default location if geolocation not supported
+        initMap(defaultLat, defaultLng);
+    }
     
     // Initialize map with given coordinates
     function initMap(lat, lng) {
@@ -60,10 +87,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Get location button click handler
+    // Get location button handler - to refresh location if needed
     document.getElementById('getLocationBtn').addEventListener('click', function() {
         if (navigator.geolocation) {
-            showAlert('success', 'Mendapatkan lokasi... Mohon tunggu');
+            showAlert('success', 'Memperbarui lokasi... Mohon tunggu');
             navigator.geolocation.getCurrentPosition(
                 // Success callback
                 function(position) {
@@ -93,6 +120,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             break;
                     }
                     showAlert('error', 'Error: ' + errorMessage);
+                },
+                // Options - use high accuracy, short timeout and no cached position
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
                 }
             );
         } else {
