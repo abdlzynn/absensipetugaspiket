@@ -269,6 +269,14 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => {
                 if (response.data.success) {
                     showAlert('success', response.data.message);
+                    
+                    // Show toast notification if function exists
+                    if (typeof showToastNotification === 'function') {
+                        const status_text = document.querySelector('input[name="status"]:checked').value === 'masuk' ? 'masuk' : 'pulang';
+                        const nama = document.getElementById('nama').value;
+                        showToastNotification(`${nama} telah melakukan absen ${status_text}`);
+                    }
+                    
                     // Reset form
                     document.getElementById('absensiForm').reset();
                     
@@ -281,6 +289,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     backPreview.classList.add('d-none');
                     document.getElementById('retakeFrontBtn').classList.add('d-none');
                     document.getElementById('retakeBackBtn').classList.add('d-none');
+                    
+                    // Update notifications in navbar
+                    if (typeof fetchNotifications === 'function') {
+                        fetchNotifications();
+                    }
                     
                     // Reset map to default
                     initMap(defaultLat, defaultLng);

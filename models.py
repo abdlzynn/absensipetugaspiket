@@ -27,3 +27,20 @@ class Absensi(db.Model):
             'status': self.status,
             'waktu': self.waktu.strftime("%Y-%m-%d %H:%M:%S")
         }
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String(255), nullable=False)
+    waktu = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    
+    def __repr__(self):
+        return f"<Notification {self.id} - {self.is_read}>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'message': self.message,
+            'waktu': self.waktu.strftime("%d-%m-%Y %H:%M:%S"),
+            'is_read': self.is_read
+        }

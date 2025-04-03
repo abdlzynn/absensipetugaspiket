@@ -1,0 +1,31 @@
+<!-- Toast Notification Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+        <div class="toast-header">
+            <i class="fas fa-bell text-primary me-2"></i>
+            <strong class="me-auto">Notifikasi Absensi</strong>
+            <small class="text-muted" id="toastTime">Baru saja</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            <!-- Message will be inserted here -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Function to show toast notification with a message
+function showToastNotification(message) {
+    const toast = document.getElementById('notificationToast');
+    const toastMessage = document.getElementById('toastMessage');
+    const toastTime = document.getElementById('toastTime');
+    
+    // Set message and time
+    toastMessage.textContent = message;
+    toastTime.textContent = 'Baru saja';
+    
+    // Create Bootstrap toast instance and show it
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+}
+</script>

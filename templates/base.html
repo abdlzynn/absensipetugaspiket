@@ -16,6 +16,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -32,6 +33,20 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <!-- Notifications dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell me-1"></i> Notifikasi
+                            <span id="unreadNotificationsBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
+                                <span id="unreadCount">0</span>
+                                <span class="visually-hidden">notifikasi belum dibaca</span>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsDropdown" style="width: 300px; max-height: 400px; overflow-y: auto;" id="notificationsList">
+                            <!-- Notifications will be loaded here -->
+                            <li><a class="dropdown-item text-center" href="#">Memuat notifikasi...</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/absensi' %}active{% endif %}" href="{{ url_for('absensi') }}">
                             <i class="fas fa-user-check me-1"></i> Absensi
@@ -69,6 +84,9 @@
     
     <!-- Axios for HTTP requests -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- Notifications JS -->
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>

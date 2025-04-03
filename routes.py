@@ -9,7 +9,7 @@ from io import BytesIO
 from PIL import Image
 
 from app import app, db
-from models import Absensi
+from models import Absensi, Notification
 from utils import generate_pdf
 
 # Configuration for file uploads
@@ -65,10 +65,35 @@ def index():
     """Redirect to the absensi page by default"""
     return redirect(url_for('absensi'))
 
+@app.route('/notifications')
+def get_notifications():
+    """Get recent notifications"""
+    # Get 5 latest unread notifications
+    notifications = Notification.query.filter_by(is_read=False).order_by(Notification.waktu.desc()).limit(5).all()
+    
+    # Convert to dict for JSON response
+    notification_list = [notification.to_dict() for notification in notifications]
+    
+    return jsonify(notifications=notification_list)
+
+@app.route('/notifications/mark-read', methods=['POST'])
+def mark_notifications_read():
+    """Mark all notifications as read"""
+    try:
+        # Update all unread notifications
+        Notification.query.filter_by(is_read=False).update({Notification.is_read: True})
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/absensi')
 def absensi():
     """User interface for attendance"""
-    return render_template('user/absensi.html')
+    # Get recent notifications for display
+    notifications = Notification.query.order_by(Notification.waktu.desc()).limit(5).all()
+    return render_template('user/absensi.html', notifications=notifications)
 
 @app.route('/submit-absensi', methods=['POST'])
 def submit_absensi():
@@ -107,6 +132,17 @@ def submit_absensi():
         )
         
         db.session.add(new_absensi)
+        
+        # Create notification
+        status_text = "masuk" if status == "masuk" else "pulang"
+        notification_message = f"{nama} telah melakukan absen {status_text}"
+        new_notification = Notification(
+            message=notification_message,
+            waktu=datetime.now(),
+            is_read=False
+        )
+        
+        db.session.add(new_notification)
         db.session.commit()
         
         return jsonify({'success': True, 'message': 'Absensi berhasil tercatat'})
