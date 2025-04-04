@@ -389,91 +389,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Function to check and set attendance status restrictions
+    // Function to check attendance status restrictions
     function checkAttendanceStatus() {
-        // Get today's date in YYYY-MM-DD format for storage key
-        const today = new Date();
-        const dateStr = today.getFullYear() + '-' + 
-            String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-            String(today.getDate()).padStart(2, '0');
+        // Enable both radio buttons by default
+        const masukRadio = document.getElementById('statusMasuk');
+        const pulangRadio = document.getElementById('statusPulang');
         
-        // Check localStorage for attendance status
-        const attendanceStatusKey = 'attendance_status_' + dateStr;
-        const attendanceStatus = localStorage.getItem(attendanceStatusKey);
+        masukRadio.disabled = false;
+        pulangRadio.disabled = false;
+        document.getElementById('submitBtn').disabled = false;
         
-        // Determine which attendance options should be available
-        if (attendanceStatus) {
-            const status = JSON.parse(attendanceStatus);
-            
-            // Disable appropriate radio button based on what's already recorded
-            const masukRadio = document.getElementById('statusMasuk');
-            const pulangRadio = document.getElementById('statusPulang');
-            
-            if (status.masuk && status.pulang) {
-                // Both attendance records exist for today
-                masukRadio.disabled = true;
-                pulangRadio.disabled = true;
-                showAlert('error', 'Anda sudah melakukan absen masuk dan pulang hari ini');
-                
-                // Disable submit button
-                document.getElementById('submitBtn').disabled = true;
-                
-            } else if (status.masuk) {
-                // Only check-in exists
-                masukRadio.disabled = true;
-                pulangRadio.disabled = false;
-                pulangRadio.checked = true;
-                showAlert('info', 'Anda sudah absen masuk hari ini. Silakan pilih absen pulang.');
-                
-            } else if (status.pulang) {
-                // Only check-out exists
-                masukRadio.disabled = false;
-                pulangRadio.disabled = true;
-                masukRadio.checked = true;
-                showAlert('info', 'Anda sudah absen pulang hari ini. Silakan pilih absen masuk.');
-            }
-        }
-        
-        // Add listener for form submission to update local storage
+        // Form submission prevention for double clicks
         const form = document.getElementById('absensiForm');
         let isSubmitting = false;
-form.addEventListener('submit', function(e) {
-    if (isSubmitting) {
-        e.preventDefault();
-        return;
-    }
-    isSubmitting = true;
-    
-    // Reset after 5 seconds
-    setTimeout(() => {
-        isSubmitting = false;
-    }, 5000);
-            // Don't add another listener if we already have one
-            if (form.hasAttribute('data-has-attendance-listener')) return;
+        
+        form.addEventListener('submit', function(e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                return;
+            }
+            isSubmitting = true;
             
-            // Mark that we've added the listener
-            form.setAttribute('data-has-attendance-listener', 'true');
-            
-            // Original form is already handled with e.preventDefault()
-            
-            // On successful submission, update localStorage
-            axios.post('/submit-absensi', new FormData(form))
-                .then(response => {
-                    if (response.data.success) {
-                        // Get current attendance status
-                        let status = JSON.parse(localStorage.getItem(attendanceStatusKey)) || { masuk: false, pulang: false };
-                        
-                        // Update status based on form selection
-                        const currentStatus = document.querySelector('input[name="status"]:checked').value;
-                        status[currentStatus] = true;
-                        
-                        // Save back to localStorage
-                        localStorage.setItem(attendanceStatusKey, JSON.stringify(status));
-                        
-                        // Update UI for next use
-                        checkAttendanceStatus();
-                    }
-                });
+            // Reset after 5 seconds
+            setTimeout(() => {
+                isSubmitting = false;
+            }, 5000);
         });
     }
 });
