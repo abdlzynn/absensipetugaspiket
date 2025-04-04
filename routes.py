@@ -126,34 +126,32 @@ def submit_absensi():
         # Get today's date in YYYY-MM-DD format for checking attendance status
         today = datetime.now(DEFAULT_TIMEZONE).date()
 
-        # Check if there was any attendance for today
+        # Check if there was any attendance for today with the same status
         today_attendance = Absensi.query.filter(
             db.func.date(Absensi.waktu) == today,
-            Absensi.nama == nama
+            Absensi.nama == nama,
+            Absensi.status == status
         ).first()
 
-        # If there was an attendance and status doesn't match, prevent submission
-        if today_attendance and today_attendance.status != status:
+        if today_attendance:
             return jsonify({
                 'success': False,
-                'message': f'Anda hanya bisa melakukan absen {today_attendance.status} hari ini'
-            }), 400
-
-        # Check for duplicate submission within 5 minutes
-        five_minutes_ago = datetime.now(DEFAULT_TIMEZONE) - timedelta(minutes=5)
-
-        existing_attendance = Absensi.query.filter(
-            db.func.date(Absensi.waktu) == today,
-            Absensi.nama == nama,
-            Absensi.status == status,
-            Absensi.waktu >= five_minutes_ago
-        ).first()
-
-        if existing_attendance:
-            return jsonify({
-                'success': False, 
                 'message': f'Anda sudah melakukan absen {status} hari ini'
             }), 400
+
+        # Check attendance sequence (masuk before pulang)
+        if status == 'pulang':
+            check_masuk = Absensi.query.filter(
+                db.func.date(Absensi.waktu) == today,
+                Absensi.nama == nama,
+                Absensi.status == 'masuk'
+            ).first()
+            
+            if not check_masuk:
+                return jsonify({
+                    'success': False,
+                    'message': 'Anda harus melakukan absen masuk terlebih dahulu'
+                }), 400
 
         # Parse device time if provided, otherwise use server time
         try:
