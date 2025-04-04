@@ -28,6 +28,9 @@
                 <img src="{{ url_for('static', filename='img/logo_mizan_amanah_new.png') }}" alt="Logo Mizan Amanah" height="40" class="me-2">
                 <span>Portal Absensi Petugas Piket</span>
             </a>
+            <div class="countdown-container ms-3">
+                <span class="badge bg-warning">Sisa Waktu: <span id="countdown">Menghitung...</span></span>
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -87,6 +90,27 @@
     
     <!-- Notifications JS -->
     <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+    
+    <!-- Countdown Timer -->
+    <script>
+        function updateCountdown() {
+            const endDate = new Date('2025-04-06T23:59:59');
+            const now = new Date();
+            const diff = endDate - now;
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            if (diff > 0) {
+                document.getElementById('countdown').textContent = days + ' hari';
+            } else {
+                document.getElementById('countdown').textContent = 'Waktu Habis';
+            }
+        }
+        
+        // Update countdown immediately and then every 24 hours
+        updateCountdown();
+        setInterval(updateCountdown, 24 * 60 * 60 * 1000);
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

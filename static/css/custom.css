@@ -170,6 +170,15 @@
     background-color: var(--ma-darker) !important;
 }
 
+.countdown-container {
+    display: inline-block;
+}
+
+.countdown-container .badge {
+    font-size: 0.9rem;
+    padding: 0.5em 0.8em;
+}
+
 .navbar-brand {
     font-weight: 600;
 }
