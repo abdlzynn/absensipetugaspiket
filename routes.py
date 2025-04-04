@@ -259,13 +259,17 @@ def admin_dashboard():
             try:
                 # Convert string date to datetime object
                 date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
-                # Convert to Asia/Jakarta timezone for comparison
-                jakarta_date = date_obj.replace(tzinfo=DEFAULT_TIMEZONE)
                 
-                # Filter by date in Asia/Jakarta timezone
-                query = query.filter(
-                    db.func.date(Absensi.waktu.astimezone(DEFAULT_TIMEZONE)) == jakarta_date.date()
-                )
+                # Create start and end datetime for the selected date
+                start_date = datetime.combine(date_obj.date(), datetime.min.time())
+                end_date = datetime.combine(date_obj.date(), datetime.max.time())
+                
+                # Add timezone info
+                start_date = start_date.replace(tzinfo=DEFAULT_TIMEZONE)
+                end_date = end_date.replace(tzinfo=DEFAULT_TIMEZONE)
+                
+                # Filter records between start and end of the day
+                query = query.filter(Absensi.waktu >= start_date, Absensi.waktu <= end_date)
             except ValueError as e:
                 app.logger.error(f"Date parsing error: {e}")
                 flash('Format tanggal tidak valid', 'warning')
