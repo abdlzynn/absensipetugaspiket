@@ -74,13 +74,17 @@ def index():
 @app.route('/notifications')
 def get_notifications():
     """Get recent notifications"""
-    # Get 5 latest unread notifications
-    notifications = Notification.query.filter_by(is_read=False).order_by(Notification.waktu.desc()).limit(5).all()
+    try:
+        # Get 5 latest unread notifications
+        notifications = Notification.query.filter_by(is_read=False).order_by(Notification.waktu.desc()).limit(5).all()
 
-    # Convert to dict for JSON response
-    notification_list = [notification.to_dict() for notification in notifications]
+        # Convert to dict for JSON response
+        notification_list = [notification.to_dict() for notification in notifications]
 
-    return jsonify(notifications=notification_list)
+        return jsonify(notifications=notification_list)
+    except Exception as e:
+        app.logger.error(f"Error fetching notifications: {str(e)}")
+        return jsonify(notifications=[]), 200  # Return empty list instead of error
 
 @app.route('/notifications/mark-read', methods=['POST'])
 def mark_notifications_read():
