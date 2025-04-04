@@ -329,6 +329,25 @@ def export_pdf():
 def page_not_found(e):
     return render_template('404.html'), 404
 
+@app.route('/admin/reset-attendance/<int:absensi_id>', methods=['POST'])
+def reset_attendance(absensi_id):
+    """Reset an attendance record"""
+    if not session.get('admin_authenticated'):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+        
+    try:
+        # Get the attendance record
+        absensi = Absensi.query.get_or_404(absensi_id)
+        
+        # Delete the record
+        db.session.delete(absensi)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Absensi berhasil direset'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.errorhandler(500)
 def server_error(e):
     return render_template('500.html'), 500
