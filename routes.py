@@ -34,15 +34,15 @@ def save_base64_image(base64_str, prefix):
         # Remove data URL prefix if present
         if ',' in base64_str:
             base64_str = base64_str.split(',')[1]
-        
+
         # Decode base64 string to image
         img_data = base64.b64decode(base64_str)
         img = Image.open(BytesIO(img_data))
-        
+
         # Convert to RGB if necessary
         if img.mode in ('RGBA', 'P'): 
             img = img.convert('RGB')
-            
+
         # Resize to a smaller size to reduce file size
         # Max dimension 800px
         max_size = 800
@@ -54,11 +54,11 @@ def save_base64_image(base64_str, prefix):
                 ratio = max_size / img.height
                 new_size = (int(img.width * ratio), max_size)
             img = img.resize(new_size, Image.Resampling.LANCZOS)
-        
+
         # Generate unique filename
         filename = f"{prefix}_{uuid.uuid4().hex}.jpg"
         file_path = os.path.join(UPLOAD_FOLDER, filename)
-        
+
         # Save image with reduced quality
         img.save(file_path, 'JPEG', quality=70)
         return os.path.join('static/uploads', filename)
@@ -76,10 +76,10 @@ def get_notifications():
     """Get recent notifications"""
     # Get 5 latest unread notifications
     notifications = Notification.query.filter_by(is_read=False).order_by(Notification.waktu.desc()).limit(5).all()
-    
+
     # Convert to dict for JSON response
     notification_list = [notification.to_dict() for notification in notifications]
-    
+
     return jsonify(notifications=notification_list)
 
 @app.route('/notifications/mark-read', methods=['POST'])
@@ -114,38 +114,50 @@ def submit_absensi():
         foto_depan_b64 = request.form.get('foto_depan')
         foto_belakang_b64 = request.form.get('foto_belakang')
         device_time = request.form.get('device_time')
-        
+
         # Validate form data
         if not all([nama, lokasi, latitude, longitude, status, foto_depan_b64, foto_belakang_b64]):
             return jsonify({'success': False, 'message': 'Semua field harus diisi'}), 400
-            
+
         # Get today's date in YYYY-MM-DD format for checking attendance status
         today = datetime.now(DEFAULT_TIMEZONE).date()
-        
-        # Check if this person has already taken attendance with the same status today
-        # Add time threshold of 5 minutes to prevent accidental double submissions
+
+        # Check if there was any attendance for today
+        today_attendance = Absensi.query.filter(
+            db.func.date(Absensi.waktu) == today,
+            Absensi.nama == nama
+        ).first()
+
+        # If there was an attendance and status doesn't match, prevent submission
+        if today_attendance and today_attendance.status != status:
+            return jsonify({
+                'success': False,
+                'message': f'Anda hanya bisa melakukan absen {today_attendance.status} hari ini'
+            }), 400
+
+        # Check for duplicate submission within 5 minutes
         five_minutes_ago = datetime.now(DEFAULT_TIMEZONE) - timedelta(minutes=5)
-        
+
         existing_attendance = Absensi.query.filter(
             db.func.date(Absensi.waktu) == today,
             Absensi.nama == nama,
             Absensi.status == status,
             Absensi.waktu >= five_minutes_ago
         ).first()
-        
+
         if existing_attendance:
             return jsonify({
                 'success': False, 
                 'message': f'Anda sudah melakukan absen {status} hari ini'
             }), 400
-        
+
         # Parse device time if provided, otherwise use server time
         try:
             if device_time:
                 # Parse ISO format datetime from client with timezone
                 # The format should be: YYYY-MM-DDTHH:MM:SS+HH:MM or YYYY-MM-DDTHH:MM:SS-HH:MM
                 app.logger.debug(f"Received device time: {device_time}")
-                
+
                 # Handle different format possibilities
                 if 'Z' in device_time:
                     # If time ends with Z (UTC), replace with +00:00
@@ -164,7 +176,7 @@ def submit_absensi():
                 else:
                     # If no timezone info, assume Asia/Jakarta timezone
                     waktu = datetime.fromisoformat(device_time).replace(tzinfo=DEFAULT_TIMEZONE)
-                
+
                 app.logger.debug(f"Parsed time: {waktu}")
             else:
                 # Fallback to server time with timezone set to DEFAULT_TIMEZONE
@@ -172,14 +184,14 @@ def submit_absensi():
         except (ValueError, TypeError) as e:
             app.logger.warning(f"Error parsing device time: {e}, using server time instead")
             waktu = datetime.now(DEFAULT_TIMEZONE)
-        
+
         # Save images
         foto_depan_path = save_base64_image(foto_depan_b64, 'depan')
         foto_belakang_path = save_base64_image(foto_belakang_b64, 'belakang')
-        
+
         if not foto_depan_path or not foto_belakang_path:
             return jsonify({'success': False, 'message': 'Gagal menyimpan foto'}), 500
-        
+
         # Create and save new attendance record
         new_absensi = Absensi(
             nama=nama,
@@ -191,9 +203,9 @@ def submit_absensi():
             status=status,
             waktu=waktu
         )
-        
+
         db.session.add(new_absensi)
-        
+
         # Create notification
         status_text = "masuk" if status == "masuk" else "pulang"
         notification_message = f"{nama} telah melakukan absen {status_text}"
@@ -202,12 +214,12 @@ def submit_absensi():
             waktu=waktu,
             is_read=False
         )
-        
+
         db.session.add(new_notification)
         db.session.commit()
-        
+
         return jsonify({'success': True, 'message': 'Absensi berhasil tercatat'})
-    
+
     except Exception as e:
         app.logger.error(f"Error submitting attendance: {e}")
         db.session.rollback()
@@ -231,17 +243,17 @@ def admin_dashboard():
         else:
             # Show login form
             return render_template('admin/login.html')
-    
+
     # If authenticated, continue to dashboard
     try:
         # Get filter parameters
         tanggal = request.args.get('tanggal')
         nama = request.args.get('nama', '').strip()
         status = request.args.get('status', '').strip().lower()
-        
+
         # Base query
         query = Absensi.query
-        
+
         # Apply filters
         if tanggal and tanggal != 'None':
             try:
@@ -251,19 +263,19 @@ def admin_dashboard():
                 )
             except ValueError:
                 flash('Format tanggal tidak valid', 'warning')
-        
+
         if nama:
             query = query.filter(Absensi.nama.ilike(f'%{nama}%'))
-        
+
         if status in ['masuk', 'pulang']:
             query = query.filter(Absensi.status == status)
     except Exception as e:
         app.logger.error(f"Error applying filters: {e}")
         flash('Terjadi kesalahan saat memfilter data', 'error')
-    
+
     # Get the records ordered by time (descending)
     absensi_list = query.order_by(Absensi.waktu.desc()).all()
-    
+
     return render_template('admin/dashboard.html', absensi_list=absensi_list, 
                           filter_tanggal=tanggal, filter_nama=nama, filter_status=status)
 
@@ -274,7 +286,7 @@ def detail_absensi(absensi_id):
     if not session.get('admin_authenticated'):
         flash('Anda harus login terlebih dahulu!', 'danger')
         return redirect(url_for('admin_dashboard'))
-        
+
     absensi = Absensi.query.get_or_404(absensi_id)
     return render_template('admin/detail_absensi.html', absensi=absensi)
 
@@ -285,15 +297,15 @@ def export_pdf():
     if not session.get('admin_authenticated'):
         flash('Anda harus login terlebih dahulu!', 'danger')
         return redirect(url_for('admin_dashboard'))
-        
+
     # Get filter parameters
     tanggal = request.form.get('tanggal', '')
     nama = request.form.get('nama', '')
     status = request.form.get('status', '')
-    
+
     # Base query
     query = Absensi.query
-    
+
     # Apply filters
     if tanggal and tanggal != 'None' and tanggal.strip():
         try:
@@ -305,19 +317,19 @@ def export_pdf():
             # Handle invalid date format
             flash('Format tanggal tidak valid', 'danger')
             return redirect(url_for('admin_dashboard'))
-    
+
     if nama:
         query = query.filter(Absensi.nama.ilike(f'%{nama}%'))
-    
+
     if status:
         query = query.filter(Absensi.status == status)
-    
+
     # Get the records ordered by time (descending)
     absensi_list = query.order_by(Absensi.waktu.desc()).all()
-    
+
     # Generate PDF
     pdf_file = generate_pdf(absensi_list, tanggal, nama, status)
-    
+
     # Return PDF file
     return send_file(
         pdf_file,
@@ -334,15 +346,15 @@ def reset_attendance(absensi_id):
     """Reset an attendance record"""
     if not session.get('admin_authenticated'):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
-        
+
     try:
         # Get the attendance record
         absensi = Absensi.query.get_or_404(absensi_id)
-        
+
         # Delete the record
         db.session.delete(absensi)
         db.session.commit()
-        
+
         return jsonify({'success': True, 'message': 'Absensi berhasil direset'})
     except Exception as e:
         db.session.rollback()
