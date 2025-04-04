@@ -246,29 +246,40 @@ def admin_dashboard():
 
     # If authenticated, continue to dashboard
     try:
-        # Get filter parameters
-        tanggal = request.args.get('tanggal')
+        # Get filter parameters with defaults
+        tanggal = request.args.get('tanggal', '')
         nama = request.args.get('nama', '').strip()
         status = request.args.get('status', '').strip().lower()
 
         # Base query
         query = Absensi.query
 
-        # Apply filters
-        if tanggal and tanggal != 'None':
+        # Apply date filter if provided and valid
+        if tanggal and tanggal.strip() and tanggal != 'None':
             try:
+                # Convert string date to datetime object
                 date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
+                # Convert to Asia/Jakarta timezone for comparison
+                jakarta_date = date_obj.replace(tzinfo=DEFAULT_TIMEZONE)
+                
+                # Filter by date in Asia/Jakarta timezone
                 query = query.filter(
-                    db.func.date(Absensi.waktu) == date_obj.date()
+                    db.func.date(Absensi.waktu.astimezone(DEFAULT_TIMEZONE)) == jakarta_date.date()
                 )
-            except ValueError:
+            except ValueError as e:
+                app.logger.error(f"Date parsing error: {e}")
                 flash('Format tanggal tidak valid', 'warning')
 
+        # Apply name filter if provided
         if nama:
             query = query.filter(Absensi.nama.ilike(f'%{nama}%'))
 
+        # Apply status filter if valid status provided
         if status in ['masuk', 'pulang']:
             query = query.filter(Absensi.status == status)
+        
+        # Order by most recent first
+        query = query.order_by(Absensi.waktu.desc())
     except Exception as e:
         app.logger.error(f"Error applying filters: {e}")
         flash('Terjadi kesalahan saat memfilter data', 'error')
